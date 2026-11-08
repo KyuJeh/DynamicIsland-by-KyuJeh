@@ -1,0 +1,34 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Susun struktur proyek
+        run: | mkdir -p app/src/main/java/com/gabs/dynamicisland mkdir -p app/src/main/res/values app/src/main/res/drawable mv *.kt app/src/main/java/com/gabs/dynamicisland/ mv AndroidManifest.xml app/src/main/ mv strings.xml app/src/main/res/values/ mv ic_launcher.xml app/src/main/res/drawable/ mv app.build.gradle.kts app/build.gradle.kts 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Terima lisensi Android SDK
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build APK debug
+        run: gradle assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DynamicIsland-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
